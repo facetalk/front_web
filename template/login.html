@@ -1,0 +1,28 @@
+<ion-view title="登录" class="login">
+    <ion-nav-buttons side="left"><button class="button button-clear icon ion-ios7-arrow-back" ng-click="back()">取消</button></ion-nav-buttons>
+    <ion-content ng-controller="loginCtrl">
+        <div class="list">
+            <form name="loginForm">
+                <label class="item item-input">
+                    <input type="email" name="loginEmail" placeholder="邮箱" required ng-model="user.loginEmail"/>
+                </label>
+                <label class="item item-input">
+                    <input ng-keypress="submit($event,loginForm,user)" type="password" name="loginPassword" placeholder="密码" required ng-model="user.loginPassword"/>
+                </label>
+            </form>
+        </div>
+        <div class="row">
+            <div class="col col-33">
+                <button class="button button-block button-positive" ng-click="login(loginForm,user)">登录</button>
+            </div>
+            <div class="col col-33 col-offset-33">
+                <a class="button button-block button-positive" href="{{regist}}">注册</a>
+            </div>
+        </div>
+        <div class="row intro">
+            <div class="col col-33"><a target="_blank" href="http://tieba.baidu.com/p/3234485709">注册说明</a></div>
+            <div class="col col-33  col-offset-33"><a target="_blank" href="http://tieba.baidu.com/f?kw=%E8%84%B8%E5%91%BC&fr=index&fp=0&ie=utf-8">问题交流</a></div>
+        </div>
+    </ion-content>
+</ion-view>
+

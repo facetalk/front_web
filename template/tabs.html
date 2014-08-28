@@ -1,0 +1,16 @@
+<ion-tabs class="tabs-positive tabs-icon-top">
+    <ion-tab title="交友" icon-on="ion-ios7-keypad" icon-off="ion-ios7-keypad-outline" ng-click="select('/tab/home')" href="#/tab/home">
+        <ion-nav-bar class="bar-positive"></ion-nav-bar>
+        <ion-nav-view name="tab-home"></ion-nav-view>
+    </ion-tab>
+    <ion-tab title="脸信" icon-on="ion-ios7-chatboxes" icon-off="ion-ios7-chatboxes-outline" badge="badgeCounts" badge-style="badge-assertive" ng-click="select('/tab/xin')" href="#/tab/xin">
+        <ion-nav-bar class="bar-positive"></ion-nav-bar>
+        <ion-nav-view name="tab-xin"></ion-nav-view>
+    </ion-tab>
+    <ion-tab title="记录" icon-on="ion-ios7-videocam" icon-off="ion-ios7-videocam-outline" ng-click="select('/tab/history')" href="#/tab/history">
+        <section ui-view="tab-history"></section>
+    </ion-tab>
+    <ion-tab title="我" icon-on="ion-ios7-person" icon-off="ion-ios7-person-outline" ng-click="select('/tab/setting')" href="#/tab/setting">
+        <section ui-view="tab-setting"></section>
+    </ion-tab>
+</ion-tabs>

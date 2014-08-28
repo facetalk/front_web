@@ -1,0 +1,20 @@
+<ion-view title="脸呼 - 当前在线用户">
+    <ion-nav-buttons side="right" ng-if="!isLogin || !isComplete">
+        <a class="button button-clear font-small" href="{{redict || '/#tab/login'}}">登录</a>
+    </ion-nav-buttons>
+    <ion-content>
+        <div ng-if="supportVideo && isComplete">
+            <ion-refresher pulling-text="下拉刷新在线用户" on-refresh="doRefresh()"></ion-refresher>
+            <div class="ion-flex" ng-click="askNotice()">
+                <a ng-repeat="item in online" href="#/tab/detail/{{item.username}}" jid="{{item.jid}}" id="{{item.username}}"><img ng-src="/avatar/{{item.imgUrl}}"/></a>
+            </div>
+        </div>
+        <div ng-if="!supportVideo || !isLogin || !isComplete">
+            <a href="#/tab/login" ng-if="supportVideo && !isLogin" class="home-tip">请先登录,以开启您的视频之旅！</a>
+            <a href="#/tab/chat" ng-if="supportVideo && isLogin && !isComplete" class="home-tip">请先设置头像,以开启您的视频之旅！</a>
+            <div class="unvalid-home">
+                <a href="{{redict}}"><img src="/images/avatar/multi.jpg"/></a>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>

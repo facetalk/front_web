@@ -1,0 +1,27 @@
+<ion-view title="设置个人图像" ng-controller="takeCtrl">
+    <ion-nav-buttons side="left">
+        <button class="button button-clear icon ion-ios7-arrow-back" ng-click="back()">取消</button>
+    </ion-nav-buttons>
+    <ion-content>
+        <div class="take">
+            <div class="tip" ng-if="isPC">请看上面的浏览器提示&nbsp;<img src="images/icons/arrow.png"/>，点击“允许”按钮，否则您无法完成注册</div>
+            <div class="tip" ng-if="!isPC">请看浏览器提示，点击“允许”按钮，否则您无法完成注册</div>
+            <div class="video">
+                <video id="face" autoplay></video>
+            </div>
+            <div class="buttons">
+                <div id="take">
+                    <a class="shoot" ng-click="taking()"></a>
+                </div>
+                <div id="choose" class="row hidden">
+                    <div class="col">
+                        <a class="confirm" ng-click="choose()"></a>
+                    </div>
+                    <div class="col">
+                        <a class="cancel" ng-click="reset()"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>

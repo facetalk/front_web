@@ -1,0 +1,14 @@
+<ion-view title="聊天记录">
+    <ion-content id="history">
+        <ion-list>
+            <ion-item ng-if="items" class="item-avatar item-icon-right" ng-repeat="item in items" href="#/tab/history/detail/{{item.partnerUserName}}">
+                    <img ng-src="{{item.img}}" />
+                    <h2>{{item.partnerName}}</h2>
+                    <p>{{item.type}} {{item.date}}</p>
+                    <i class="icon icon-right ion-ios7-arrow-right"></i>
+            </ion-item>
+            <ion-item ng-if="!items">暂无通话记录</ion-item>
+        </ion-list>
+        <ion-infinite-scroll ng-if="hasMore" on-infinite="loadMore()" distance="1%"></ion-infinite-scroll>
+    </ion-content>
+</ion-view>

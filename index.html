@@ -1,0 +1,48 @@
+<html ng-app="facetalk">
+<head>
+<meta charset="utf-8">
+<title>脸呼 - 在线视频聊天交友平台</title>
+<meta name="Keywords" content="脸呼,视频聊天,在线交友,交友平台,绿色安全,facehu,facetalk,facehoo"/>
+<meta name="Description" content="脸呼致力于为互联网用户提供绿色、安全的在线交友平台，使用户可以更真实地进行交流，以最方便的视频方式进行输入输出。替代传统用户善于文字、语音信息等非即时方式（即在发送文字和语音信息时，可提前进行一定时间的思考、构思然后再进行表达，此为非即时）进行表达的方式和习惯，而是真正基于现实情境上的一个即时视频互动，切实提高用户在面对面沟通时的表达能力，让用户间的互动实现线上线下的无缝衔接。"/>
+<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width"/>
+<link href="ionic/css/ionic.css" rel="stylesheet"/>
+<link href="css/facetalk.css" rel="stylesheet" />
+</head>
+<body>
+<ion-nav-view animation="slide-left-right"></ion-nav-view>
+<audio preload src="sounds/notice.mp3" class="hidden" id="noticeAd"></audio>
+
+<script id="index.html" type="text/ng-template">
+    <ion-view> 
+        <ion-content>
+            <div class="intro">
+                <ion-slide-box does-continue="true" slide-interval="3000">
+                    <ion-slide>
+                        <div class="intro_con blue">1</div>
+                    </ion-slide>
+                    <ion-slide>
+                        <div class="intro_con yellow">2</div>
+                    </ion-slide>
+                    <ion-slide>
+                        <div class="intro_con pink">3</div>
+                    </ion-slide>
+                </ion-slide-box>
+            </div>
+            <div class="row">
+                <div class="col col-33 col-offset-33">
+                    <a href="#/tab/home" class="button button-block button-positive">立即体验</a>
+                </div>
+            </div>
+        </ion-content>
+    </ion-view>
+</script>
+</body>
+<script type="text/javascript" src="ionic/js/ionic.bundle.min.js"></script>
+<script type="text/javascript" src="js/simplewebrtc.bundle.min.js"></script>
+<script type="text/javascript" src="js/strophe.min.js"></script>
+<script type="text/javascript" src="js/json2Store-min.js"></script>
+<script type="text/javascript" src="js/facetalk.js"></script>
+<script type="text/javascript" src="js/service.js"></script>
+<script type="text/javascript" src="js/controller.js"></script>
+<script type="text/javascript" src="js/jsgif.js"></script>
+</html>

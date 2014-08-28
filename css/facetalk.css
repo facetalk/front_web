@@ -1,0 +1,119 @@
+form.invalid input.ng-invalid{background-color:lightgoldenrodyellow;}
+.hidden{display:none}
+a.link,a.link:link,a.link:visited,a.link:hover,a.link:active{color:red}
+img{vertical-align:middle}
+
+.intro{height:80%;}
+.intro_con{height:100%}
+
+.blue{background:blue;}
+.yellow{background:yellow;}
+.pink{background:pink;}
+
+
+/*Home在线列表*/
+a.home-tip{display:block;font-size:16px;margin:10px auto;text-align:center;font-weight:bold;text-decoration:none;color:#999}
+.ion-flex{
+display:-webkit-box;display:box;display:-moz-box;display:-ms-flexbox;display:-webkit-flex;display:flex;
+-webkit-box-lines:multiple;box-lines:multiple;-moz-box-lines:multiple;ms-flex-wrap:wrap;-webkit-flex-wrap:wrap;flex-wrap:wrap;
+width:100%;max-width:600px;margin:0 auto;
+}
+.ion-flex a{display:block;width:25%;border:solid 1px #fff;max-width:100px;height:130px;overflow:hidden;text-align:center;}
+.ion-flex img{width:100px;}
+.ion-circle{position:absolute;right:0;top:0;display:block;width:10px;height:10px;border-radius:5px;}
+.unvalid-home a{width:100%;display:block;text-align:center;font-size:12px;}
+.unvalid-home img{width:100%;max-width:400px;}
+
+/*History*/
+#history img{width:80px;height:auto;border-radius:0;max-height:130px;}
+
+/*登录页*/
+.login .row{width:80%;margin:0 auto;text-align:center;}
+.intro a,.intro a:link,.intro a:visited,.intro a:hover,.intro a:active{color:#3c579d;}
+
+/*拍照前提醒页*/
+.photos .step{width:90%;text-align:center;padding-top:20%;margin:0 auto;}
+.photos .step p{margin-top:30px;font-size:17px;}
+
+/*拍照页*/
+.take{margin:0 auto;text-align:center;}
+.take .tip{font-size:16px;font-weight:bold;margin:10px auto;color:#999}
+.take .video{background:#333;}
+.take video{height:260px;width:auto;}
+.take .buttons{text-align:center;}
+.take .shoot{background:url(../images/icons/icons.png) left top;height:73px;width:75px;display:block;margin:0 auto;}
+.take .confirm{background:url(../images/icons/icons.png) left -74px;height:33px;width:45px;display:block;margin:0 auto;}
+.take .cancel{background:url(../images/icons/icons.png) left -106px;height:30px;width:40px;display:block;margin:0 auto;}
+
+.detail{}
+.detail .price,.detail .status{color:green;}
+.detail .pic{text-align:center;}
+.detail .item-image img{width:200px;}
+
+#facexinPop{position:fixed;width:100%;height:100px;overflow:hidden;z-index:1000;background:#ddd;}
+.facexinPop{bottom:0;-webkit-animation:up 1s;animation:up 1s}
+.faceXinDown{bottom:-100px;-webkit-animation:down 1s;animation:down 1s}
+@-webkit-keyframes up{
+    from {bottom:-100px;}
+    to {bottom:0px;}
+}
+@keyframes up{
+    from {bottom:-100px;}
+    to {bottom:0px;}
+}
+@-webkit-keyframes down{ 
+    from {bottom:0px;}
+    to {bottom:-100px;}
+}
+@keyframes down{
+    from {bottom:0px;}
+    to {bottom:-100px;}
+}
+#facexinPop video{height:100px;width:auto;max-width:133px;position:absolute;left:0;top:0}
+#facexinPop .inputWrapper{text-align:center;padding-left:150px;padding-right:20px;}
+.inputWrapper .title{height:40px;line-height:40px;font-weight:bold;}
+.xin-close{position:absolute;right:10px;top:10px;cursor:pointer}
+.counter{position:absolute;left:40px;height:100px;z-index:2000;color:red;font-size:60px;line-height:100px;font-weight:bolder;text-align:center;}
+
+.facexin a{display:block;height:120px;text-align:left;padding:10px 30px 10px 150px;position:relative;text-decoration:none}
+.facexin .left{height:100px;max-width:140px;text-align:center;overflow:hidden;position:absolute;left:10px;top:10px;border-radius:4px}
+.facexin .right{padding-left:10px;}
+.facexin h2{font-size:16px;padding:5px 0;margin:0;}
+.facexin i{display:block;font-size:12px;line-height:18px;padding:0 10px;background:#e54a40;color:#fff;position:absolute;top:15px;right:20px;border-radius:4px;}
+
+.chat{text-align:center;width:100%;height:100%;background:#666;color:#fff}
+.local{position:absolute;right:0;bottom:0;z-index:2000;background:#666;}
+#local{height:130px;background:#666;border:solid 1px #666}
+#remote{width:100%;height:100%;
+display:-webkit-box;display:-moz-box;display:-ms-flexbox;display:-webkit-flex;display:flex;
+-webkit-box-align:center;-moz-box-align:center;-ms-flex-align:center;-webkit-align-items:center;align-items:center;
+-webkit-box-pack:center;-moz-box-pack:center;-ms-flex-pack:center;-webkit-justify-pack:center;justify-pack:center;
+}
+#remote video{width:100%;height:auto}
+@media screen and (min-width:600px) {
+    #local{height:260px;background:#666;border:solid 1px #666}
+    #remote video{height:100%;}
+}
+#status-info{position:absolute;top:35%;width:100%;}
+.request img{width:100%;border:solid 1px #666}
+
+//Seting页面
+.myinfo{}
+.myinfo img{vertical-align:middle}
+.myinfo .img img{width:80px;border:solid 1px #333;vertical-align:middle}
+.myinfo strong{margin-left:10px;}
+
+.buyinfo{margin:20px 10px;font-size:16px;}
+.buyinfo .buyCon{text-indent:32px;}
+.buy .buy-input span{padding-left:8px;}
+.buy img{vertical-align:middle}
+
+.popForm{position:absolute;width:50%;right:0;bottom:5px;z-index:2000}
+.popForm .button{width:100%;background:none;border:0;padding:5px;}
+
+
+.bar.bar-positive{background-color:#3c579d;}
+.tabs-striped.tabs-positive .tab-item.tab-item-active, .tabs-striped.tabs-positive .tab-item.active, .tabs-striped.tabs-positive .tab-item.activated { color: #3c579d; border-color: #3c579d; }
+.button.button-positive{background-color:#6178af;border-color:#6178af;border-radius:4px;}
+
+.font-small{font-size:14px;}
