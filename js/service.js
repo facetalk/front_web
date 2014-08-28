@@ -26,10 +26,13 @@ servicesModule.factory('$ionicStorage',function($rootScope){
             if(notices.length > this.max.notices) notices = notices.slice(0,this.max.notices);
 
             //处理聊天记录
-            var xin = xins[jid];
-            if(!xin) xins[jid] = {'unreaded':0,'lists':[]};
-            xins[jid]['unreaded'] += 1;
-            xins[jid]['lists'].push(message);
+            var xin = xins[jid],list;
+            if(!xin) xins[jid] = {'unreaded':0,'name':message.name,'lists':[]};
+            if(!message.isMe) xins[jid]['unreaded'] += 1;
+
+            list = {'text':message.text,'url':message.url};
+            if(message.isMe) list.isMe = true;
+            xins[jid]['lists'].push(list);
 
             if(xins[jid]['lists'].length > this.max.perCons){
                 //如果超出max，cookie只存储max属性，但是xins对象中全部存上
@@ -94,7 +97,7 @@ servicesModule.factory('$ionicStorage',function($rootScope){
             },1000)
         }
     }
-}).factory('$ionicXin',function($http,$ionicVideo,$ionicXmpp,$ionicTip){
+}).factory('$ionicXin',function($http,$ionicVideo,$ionicXmpp,$ionicTip,$ionicStorage){
     var waiting = false;
     return {
         show:function(m_jid,jid,nick){
@@ -150,8 +153,6 @@ servicesModule.factory('$ionicStorage',function($rootScope){
             var face = _$('facexinPop').getElementsByTagName('video')[0];
             waiting = true;//正在录Gif时，不允许关闭
 
-            console.log(jid)
-
             _$('counter').className = 'counter';
 
             canvas.width = face.offsetWidth;
@@ -178,8 +179,11 @@ servicesModule.factory('$ionicStorage',function($rootScope){
                         var status = data.status;
                         if(status == 'success'){
                             $ionicXmpp.connection.send($msg({type:'chat',to:jid + '@facetalk',gifid:gifId,nick:nick}).c('body').t(_$('xin_put').value))
+
+                            var message = {'jid':jid,'name':nick,'url':'/faceSmsGif/' + gifId.substring(0,2) + '/' + gifId.substring(2,4) + '/' + gifId  + '.gif','text':_$('xin_put').value,'isMe':true};
+                            $ionicStorage.set(message)
+
                             _$('xin_put').value = '';
-                            console.log('-------------' + jid)
                         }
                     })
                 }else{

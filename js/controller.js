@@ -153,23 +153,25 @@ controllersModule.controller('loginCtrl',function($rootScope,$scope,$ionicUser,$
         var jid = message.jid;
         $scope.notices[0]['unreaded'] = xins[jid]['unreaded'];
     })
-    $scope.$on('read',function(event){
+    $scope.$on('read',function(event,jid){
+        if(xins[jid]['unreaded'])
+        xins[jid]['unreaded'] = 0;
+        Storage.set('facexin',$ionicStorage.facexin);
     })
 
-}).controller('xinDetailCtrl',function($rootScope,$scope,$stateParams,$ionicXin,$ionicNavBarDelegate,$ionicVideo){
+}).controller('xinDetailCtrl',function($rootScope,$scope,$stateParams,$ionicStorage,$ionicNavBarDelegate){
     var my_jid = $rootScope.userInfo.username,jid = $stateParams.jid,nick = $rootScope.userInfo.name;
 
-    $scope.xin = $rootScope.xins[jid];
+    var facexin = $ionicStorage.facexin;
+    if(!facexin) $ionicStorage.init();
+    var xins = $ionicStorage.facexin.xins;
 
-    $ionicXin.show(my_jid,jid,nick,true);
-    console.log(jid)
+    $scope.lists = xins[jid].lists;
 
-    $scope.back = function(){
-        _$('facexinPop').className = 'hidden';
-        $ionicVideo.stream.stop();
-        $ionicVideo.stream = null;
-        setTimeout(function(){
-            $ionicNavBarDelegate.back();
-        },500)
+    $scope.name = xins[jid].name;
+
+    if(xins[jid]['unreaded']){
+        xins[jid]['unreaded'] = 0;
+        Storage.set('facexin',$ionicStorage.facexin);
     }
 })

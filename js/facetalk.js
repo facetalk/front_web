@@ -10,6 +10,18 @@ app.config(function($httpProvider){
     $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
 })
 
+app.filter('gifTime',function(){
+    return function(value){
+        var arr = /(\d+)\.gif/.exec(value);
+        if(arr){
+            time = arr[1];
+            return time;
+        }else{
+            return value;
+        }
+    }
+})
+
 app.config(function($stateProvider,$urlRouterProvider){
     var random = 0;
     //首页
