@@ -11,14 +11,17 @@ app.config(function($httpProvider){
 })
 
 app.filter('gifTime',function(){
-    return function(value){
-        var arr = /(\d+)\.gif/.exec(value);
+    return function(value,para){
+        var arr = /([^\/]+)_(\d+)\.gif/.exec(value);
         if(arr){
-            time = arr[1];
-            return time;
+            return (para == 'jid' ? arr[1] : arr[2]);
         }else{
             return value;
         }
+    }
+}).filter('escape',function(){
+    return function(value){
+        return encodeURI(value);
     }
 })
 
@@ -40,15 +43,26 @@ app.config(function($stateProvider,$urlRouterProvider){
                 if(name) return $ionicUser.getInfo(name);
             }
         },
-        controller:function($scope,$ionicNavBarDelegate,$ionicXmpp,$ionicTip,$ionicVideo){
+        controller:function($rootScope,$scope,$ionicNavBarDelegate,$ionicXmpp,$ionicTip,$ionicVideo){
             $scope.select = function(hash){
-                if($ionicXmpp.status != 0 || $ionicVideo.stream){
-                    var msg = '您正在视频通话，请点击左上角结束后再切换菜单';
-                    if($ionicVideo.stream) msg = '请完成拍照或者点击左上角结束再切换菜单';
-                    $ionicTip.show(msg).timeout();
+                if((!$rootScope.isLogin || !$rootScope.isComplete) && !$ionicVideo.stream){//1.用户未登录;2.未登录或头像不合乎要求
+                    if(!$rootScope.isComplete) Storage.cookie.remove('_fh_username');
+                    $ionicTip.show('请先登录').timeout();
+                    return;
                 }else{
-                    location.hash = hash;
+                    if($ionicXmpp.status != 0){//如果正在视频
+                        $ionicTip.show('请先挂断视频通话再访问本页面').timeout();
+                        return;
+                    }else if($ionicVideo.stream){
+                        if(!$rootScope.isComplete){//如果是首次拍照页 - 更改图片时允许切换tab但是要关闭摄像头
+                            $ionicTip.show('请先完成拍照保存再访问本页面').timeout();
+                            return;
+                        }else{//其他情况下比为脸信页
+                            $ionicVideo.stream.stop();
+                        }
+                    }
                 }
+                location.hash = hash;
             }
             $scope.back = function(){
                 $ionicNavBarDelegate.back();
@@ -63,27 +77,25 @@ app.config(function($stateProvider,$urlRouterProvider){
             'tab-home':{
                 templateUrl:'template/home.html?' + random,
                 controller:function($rootScope,$scope,$ionicLoading,$ionicXmpp,$ionicClient,$ionicNotice,$ionicTip){
-                    $ionicTip.hide();
-                    $scope.redict = !$rootScope.isLogin ? '#/tab/login': (!$rootScope.isComplete ? '#/tab/take' : '');
                     $scope.askNotice = function(){
                         $ionicNotice.init();//桌面通知
                     }
 
-                    if($rootScope.isComplete && !Storage.cookie.get('_fh_fresh_tip')){
-                        $ionicTip.show('下拉更新在线用户列表 ...').timeout();
+                    if($rootScope.isComplete && !Storage.cookie.get('_fh_fresh_tip')){//首次访问提醒下拉可以刷新用户列表
+                        $ionicTip.show('向下拖拽后释放以更新用户列表').timeout();
                         Storage.cookie.set('_fh_fresh_tip','done',365*24*60*60);
                     }
                     
                     if(!$ionicClient.supportVideo){
                         var msg = '';
                         if($ionicClient.isIOS){
-                            msg = '目前脸呼暂不支持IOS系统';
+                            msg = '脸呼暂不兼容您的苹果手机，请在计算机或安卓系统的手机上使用chrome浏览器访问脸呼获得最佳的用户体验';
                         }else{
                             if($ionicClient.isPC){
                                 var link = $ionicClient.isMAC ? 'http://rj.baidu.com/soft/detail/25718.html' : 'http://rj.baidu.com/soft/detail/14744.html';
-                                msg = '目前脸呼仅支持Chrome和Firefox浏览器,我们建议您使用最新版的Chrome浏览器,<a class="link" target="_blank" href="' + link + '">点击下载Chrome浏览器</a>';
+                                msg = '您的浏览器暂不兼容脸呼，请使用chrome浏览器访问脸呼获得最佳的用户体验,<a class="link" target="_blank" href="' + link + '">点击下载Chrome浏览器</a>';
                             }else{
-                                msg = '目前脸呼仅支持Chrome和Firefox浏览器,我们建议您使用最新版的Chrome浏览器';
+                                msg = '您的浏览器暂不兼容脸呼，请使用chrome浏览器访问脸呼获得最佳的用户体验';
                             }
                         }
                         $ionicLoading.show({template:msg})
@@ -109,8 +121,25 @@ app.config(function($stateProvider,$urlRouterProvider){
                 templateUrl:'template/regist.html?' + random
             }
         }
+    }).state('tabs.takeTip',{//用户拍照前的提示页
+        url:'/takeTip',
+        views:{
+            'tab-home':{
+                templateUrl:'template/take-tip.html?' + random,
+                controller:function($scope){
+                    $scope.takeURL = '#/tab/take';
+                }
+            }
+        }
+    }).state('tabs.removeTip',{//图片不合法重新拍照前的提示页
+        url:'/removeTip',
+        views:{
+            'tab-home':{
+                templateUrl:'template/remove-tip.html?' + random
+            }
+        }
     }).state('tabs.take',{
-        url:':router/take',
+        url:'/take',
         views:{
             'tab-home':{
                 templateUrl:'template/take.html?' + random
@@ -124,7 +153,7 @@ app.config(function($stateProvider,$urlRouterProvider){
             }
         }
     }).state('tabs.chat',{
-        url:'/chat/:roomid',
+        url:'/chat/:roomid/:nick',
         views:{
             'tab-home':{
                 templateUrl:'template/chat.html?' + random
@@ -141,7 +170,7 @@ app.config(function($stateProvider,$urlRouterProvider){
             }
         }
     }).state('tabs.xin-detail',{
-        url:'/xin-detail/:jid',
+        url:'/xin-detail/:jid/:name',
         views:{
             'tab-xin':{
                 templateUrl:'template/xin-detail.html?' + random
@@ -155,46 +184,6 @@ app.config(function($stateProvider,$urlRouterProvider){
         url:'/history',
         views:{
             'tab-history':{
-                template:'<ion-nav-bar class="bar-positive"></ion-nav-bar><ion-nav-view name="history"></ion-nav-view>',
-                controller:function($rootScope,$state,$ionicTip){
-                    if($rootScope.isLogin){
-                        if($rootScope.isComplete){
-                            $state.go('tabs.history.main');
-                        }else{
-                            $state.go('tabs.history.take');
-                        }
-                    }else{
-                        $ionicTip.show('请先登录 ...').timeout();
-                        $state.go('tabs.history.login');
-                    }
-                }
-            }
-        }
-    }).state('tabs.history.login',{
-        url:'/login',
-        views:{
-            'history':{
-                templateUrl:'template/login.html?' + random
-            },
-        }
-    }).state('tabs.history.regist',{
-        url:'/regist',
-        views:{
-            'history':{
-                templateUrl:'template/regist.html?' + random
-            }
-        }
-    }).state('tabs.history.take',{
-        url:':router/take',
-        views:{
-            'history':{
-                templateUrl:'template/take.html?' + random
-            }
-        }
-    }).state('tabs.history.main',{
-        url:'/main',
-        views:{
-            'history':{
                 templateUrl:'template/history.html?' + random,
                 controller:function($rootScope,$scope,$http,$ionicTip){
                     var info = $rootScope.userInfo,base = 0,offset = 10;
@@ -234,17 +223,17 @@ app.config(function($stateProvider,$urlRouterProvider){
                 }
             }
         }
-    }).state('tabs.history.detail',{
-        url:'/detail/:jid',
+    }).state('tabs.hDetail',{
+        url:'/hDetail/:jid',
         views:{
-            'history':{
+            'tab-history':{
                 templateUrl:'template/detail.html?' + random
             }
         }
-    }).state('tabs.history.chat',{
-        url:'/chat/:roomid',
+    }).state('tabs.hChat',{
+        url:'/hChat/:roomid/:nick',
         views:{
-            'history':{
+            'tab-history':{
                 templateUrl:'template/chat.html?' + random
             }
         }
@@ -256,74 +245,48 @@ app.config(function($stateProvider,$urlRouterProvider){
         url:'/setting',
         views:{
             'tab-setting':{
-                template:'<ion-nav-bar class="bar-positive"></ion-nav-bar><ion-nav-view name="setting"></ion-nav-view>',
-                controller:function($rootScope,$state,$ionicTip){
-                    if($rootScope.isLogin){
-                        if($rootScope.isComplete){
-                            $state.go('tabs.setting.main');
-                        }else{
-                            $state.go('tabs.setting.take');
-                        }
-                    }else{
-                        $ionicTip.show('请先登录 ...').timeout();
-                        $state.go('tabs.setting.login');
-                    }
-                }
-            }
-        }
-    }).state('tabs.setting.login',{
-        url:'/login',
-        views:{
-            'setting':{
-                templateUrl:'template/login.html?' + random
-            },
-        }
-    }).state('tabs.setting.regist',{
-        url:'/regist',
-        views:{
-            'setting':{
-                templateUrl:'template/regist.html?' + random
-            }
-        }
-    }).state('tabs.setting.take',{
-        url:':router/take',
-        views:{
-            'setting':{
-                templateUrl:'template/take.html?' + random
-            }
-        }
-    }).state('tabs.setting.main',{
-        url:'/main',
-        views:{
-            'setting':{
                 templateUrl:'template/setting.html?' + random,
-                controller:function($rootScope,$scope,$http,$state,$ionicXmpp,$ionicTip){
+                controller:function($rootScope,$scope,$http,$state,$ionicXmpp){
                     var info = $rootScope.userInfo;
-                    $ionicTip.hide();
                     info.img = '/avatar/' + info.username + '.100.png?' + new Date().getTime();
                     $scope.info = info;
-                    $http.get('/api/pay/getCount/rose/' + info.username).success(function(data){
-                        $scope.info.count = data.productAmount;
-                    })
+                    
                     $scope.logout = function(){
                         Storage.cookie.remove('_fh_username');
-                        $ionicXmpp.connection.disconnect();
+                        try{$ionicXmpp.connection.disconnect();}catch(e){}//有时候xmpp会意外中断
                         $ionicXmpp.connection = null;
 
                         $rootScope.userInfo = null;
                         $rootScope.isLogin = false;
                         $rootScope.isComplete = false;
 
-                        $state.go('tabs.setting.login');
+                        $state.go('tabs.home');
                     }
                 }
             }
         }
-    }).state('tabs.setting.buyinfo',{
-        url:'/buyinfo',
+    }).state('tabs.settingTakeTip',{
+        url:'/settingTakeTip',
         views:{
-            'setting':{
-                templateUrl:'template/buyinfo.html?' + random
+            'tab-setting':{
+                templateUrl:'template/take-tip.html?' + random,
+                controller:function($scope){
+                    $scope.takeURL = '#/tab/settingTake';
+                }
+            }
+        }
+    }).state('tabs.settingTake',{
+        url:'/settingTake',
+        views:{
+            'tab-setting':{
+                templateUrl:'template/take.html?' + random
+            }
+        }
+    }).state('tabs.about',{
+        url:'/about',
+        views:{
+            'tab-setting':{
+                templateUrl:'template/about.html?' + random
             }
         }
     })

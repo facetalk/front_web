@@ -4,9 +4,7 @@
     </ion-nav-buttons>
     <ion-content>
         <div class="take">
-            <div class="tip" ng-if="isPC">请看上面的浏览器提示&nbsp;<img src="images/icons/arrow.png"/>，点击“允许”按钮，否则您无法完成注册</div>
-            <div class="tip" ng-if="!isPC">请看浏览器提示，点击“允许”按钮，否则您无法完成注册</div>
-            <div class="video">
+            <div class="video flex vmiddle hcenter">
                 <video id="face" autoplay></video>
             </div>
             <div class="buttons">
@@ -15,10 +13,10 @@
                 </div>
                 <div id="choose" class="row hidden">
                     <div class="col">
-                        <a class="confirm" ng-click="choose()"></a>
+                        <a class="button icon-left ion-android-checkmark button-positive" ng-click="choose()">使用照片</a>
                     </div>
                     <div class="col">
-                        <a class="cancel" ng-click="reset()"></a>
+                        <a class="button icon-left ion-android-close button-stable" ng-click="reset()">重&nbsp;&nbsp;拍</a>
                     </div>
                 </div>
             </div>

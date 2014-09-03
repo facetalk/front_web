@@ -6,12 +6,12 @@
         <div class="detail list card">
             <div class="item item-divider">
                 <h2>{{info.name}}</h2>
-                <p><span ng-if="info.price">收费用户: <span class="price">与TA聊天需要耗费<span id="price">{{info.price}}</span>朵玫瑰&nbsp;&nbsp;</span></span>状态: <span class="status" id="detail-status">{{status}}</span></p>
+                <p>状态: <span class="status" id="detail-status">{{status}}</span></p>
             </div>
             <div class="item item-image pic">
                 <img ng-src="/avatar/{{username}}.png" />
             </div>
-            <div class="item row">
+            <div class="item row" id="detail-action">
                 <div class="col">
                     <button ng-if="!myself" class="button button-block button-positive" ng-click="xin()">发消息</button>
                     <button ng-if="myself" class="button button-block button-positive" disabled>发消息</button>

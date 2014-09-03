@@ -7,10 +7,12 @@
         <ion-nav-bar class="bar-positive"></ion-nav-bar>
         <ion-nav-view name="tab-xin"></ion-nav-view>
     </ion-tab>
-    <ion-tab title="记录" icon-on="ion-ios7-videocam" icon-off="ion-ios7-videocam-outline" ng-click="select('/tab/history')" href="#/tab/history">
-        <section ui-view="tab-history"></section>
+    <ion-tab title="视频记录" icon-on="ion-ios7-videocam" icon-off="ion-ios7-videocam-outline" ng-click="select('/tab/history')" href="#/tab/history">
+        <ion-nav-bar class="bar-positive"></ion-nav-bar>
+        <ion-nav-view name="tab-history"></ion-nav-view>
     </ion-tab>
     <ion-tab title="我" icon-on="ion-ios7-person" icon-off="ion-ios7-person-outline" ng-click="select('/tab/setting')" href="#/tab/setting">
-        <section ui-view="tab-setting"></section>
+        <ion-nav-bar class="bar-positive"></ion-nav-bar>
+        <ion-nav-view name="tab-setting"></ion-nav-view>
     </ion-tab>
 </ion-tabs>

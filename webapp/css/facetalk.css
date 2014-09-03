@@ -1,15 +1,10 @@
-form.invalid input.ng-invalid{background-color:lightgoldenrodyellow;}
 .hidden{display:none}
-a.link,a.link:link,a.link:visited,a.link:hover,a.link:active{color:red}
+a.link,a.link:link,a.link:visited,a.link:hover,a.link:active{text-decoration:underline;color:#ef4e3a}
 img{vertical-align:middle}
-
-.intro{height:80%;}
-.intro_con{height:100%}
-
-.blue{background:blue;}
-.yellow{background:yellow;}
-.pink{background:pink;}
-
+.flex{display:-webkit-box;display:-moz-box;display:-ms-flexbox;display:-webkit-flex;display:flex;}
+.hcenter{-webkit-box-align:center;-moz-box-align:center;-ms-flex-align:center;-webkit-align-items:center;align-items:center;}
+.vmiddle{-webkit-box-pack:center;-moz-box-pack:center;-ms-flex-pack:center;-webkit-justify-pack:center;justify-pack:center;}
+.wrap{-webkit-box-lines:multiple;box-lines:multiple;-moz-box-lines:multiple;ms-flex-wrap:wrap;-webkit-flex-wrap:wrap;flex-wrap:wrap;}
 
 /*Home在线列表*/
 a.home-tip{display:block;font-size:16px;margin:10px auto;text-align:center;font-weight:bold;text-decoration:none;color:#999}
@@ -23,25 +18,31 @@ width:100%;max-width:600px;margin:0 auto;
 .ion-circle{position:absolute;right:0;top:0;display:block;width:10px;height:10px;border-radius:5px;}
 .unvalid-home a{width:100%;display:block;text-align:center;font-size:12px;}
 .unvalid-home img{width:100%;max-width:400px;}
+.siteInfo{text-align:center;padding-top:10px;}
+.siteInfo a{text-decoration:none;color:#333;font-size:12px;}
 
 /*History*/
 #history img{width:80px;height:auto;border-radius:0;max-height:130px;}
 
 /*登录页*/
 .login .row{width:80%;margin:0 auto;text-align:center;}
-.intro a,.intro a:link,.intro a:visited,.intro a:hover,.intro a:active{color:#3c579d;}
+
+/*注册页*/
+.regist .info{padding-left:10px;}
 
 /*拍照前提醒页*/
-.photos .step{width:90%;text-align:center;padding-top:20%;margin:0 auto;}
-.photos .step p{margin-top:30px;font-size:17px;}
+.take-tip{max-width:500px;height:80%;margin: 44px auto;padding:0 10px;}
+.p1{font-size:16px;margin-bottom:40px;font-weight:bold}
+.p6{margin:20px 0;font-weight:bold}
+.take-tip .buttons{text-align:center;margin-top:40px;}
 
 /*拍照页*/
 .take{margin:0 auto;text-align:center;}
 .take .tip{font-size:16px;font-weight:bold;margin:10px auto;color:#999}
-.take .video{background:#333;}
-.take video{height:260px;width:auto;}
+.take .video{background:#333;height:80%;}
+.take video{height:260px;width:auto;margin:0 auto;}
 .take .buttons{text-align:center;}
-.take .shoot{background:url(../images/icons/icons.png) left top;height:73px;width:75px;display:block;margin:0 auto;}
+.take .shoot{background:url(../images/icons/icons.png) left top;height:73px;width:75px;display:block;margin:0 auto;cursor:pointer}
 .take .confirm{background:url(../images/icons/icons.png) left -74px;height:33px;width:45px;display:block;margin:0 auto;}
 .take .cancel{background:url(../images/icons/icons.png) left -106px;height:30px;width:40px;display:block;margin:0 auto;}
 
@@ -50,41 +51,29 @@ width:100%;max-width:600px;margin:0 auto;
 .detail .pic{text-align:center;}
 .detail .item-image img{width:200px;}
 
-#facexinPop{position:fixed;width:100%;height:100px;overflow:hidden;z-index:1000;background:#ddd;}
-.facexinPop{bottom:0;-webkit-animation:up 1s;animation:up 1s}
-.faceXinDown{bottom:-100px;-webkit-animation:down 1s;animation:down 1s}
-@-webkit-keyframes up{
-    from {bottom:-100px;}
-    to {bottom:0px;}
-}
-@keyframes up{
-    from {bottom:-100px;}
-    to {bottom:0px;}
-}
-@-webkit-keyframes down{ 
-    from {bottom:0px;}
-    to {bottom:-100px;}
-}
-@keyframes down{
-    from {bottom:0px;}
-    to {bottom:-100px;}
-}
-#facexinPop video{height:100px;width:auto;max-width:133px;position:absolute;left:0;top:0}
-#facexinPop .inputWrapper{text-align:center;padding-left:150px;padding-right:20px;}
-.inputWrapper .title{height:40px;line-height:40px;font-weight:bold;}
-.xin-close{position:absolute;right:10px;top:10px;cursor:pointer}
-.counter{position:absolute;left:40px;height:100px;z-index:2000;color:red;font-size:60px;line-height:100px;font-weight:bolder;text-align:center;}
+.facexinChat{position:fixed;width:100%;height:100px;text-align:left;padding:0px 30px 0px 150px;bottom:49px;overflow:hidden;background:#fff;}
+.facexinChat input{border:1px;}
+.facexinChat .left{height:100px;max-width:140px;text-align:center;overflow:hidden;position:absolute;left:10px;top:0px;}
+.recording{position:absolute;z-index:5;color:#fff;font-size:12px;right:0;top:0;height:16px;line-height:16px;width:100px;text-align:center;}
+.recording .bg{background:#000;opacity:0.6;position:absolute;left:0;top:0;z-index:5;width:100%;height:100%;}
+.recording .cons{position:absolute;top:0;left:0;padding:0 5px;z-index:6;width:100%;height:100%;}
+.recording .shine{width:8px;height:8px;display:inline-block;border-radius:4px;vertical-align:middle;background:#d30d00}
+.facexinChat .right{}
+.facexinChat video{height:100px;width:auto;}
+.facexinChat .tip{text-align:center;height:20px;line-height:20px;font-weight:bold;}
+.facexinChat .con{}
 
-.facexin a{display:block;height:120px;text-align:left;padding:10px 30px 10px 150px;position:relative;text-decoration:none}
-.facexin .left{height:100px;max-width:140px;text-align:center;overflow:hidden;position:absolute;left:10px;top:10px;border-radius:4px}
+.facexin a{display:block;height:100px;text-align:left;padding:0 30px 0 150px;position:relative;text-decoration:none}
+.facexin .left{height:100px;max-width:140px;text-align:center;overflow:hidden;position:absolute;left:10px;top:0;}
 .facexin .right{padding-left:10px;border-left:solid 1px #ccc;}
 .facexin h2{font-size:16px;padding:5px 0;margin:0;}
 .facexin i{display:block;font-size:12px;line-height:18px;padding:0 10px;background:#e54a40;color:#fff;position:absolute;top:15px;right:20px;border-radius:4px;}
+.facexin-detail:last-child{padding-bottom:100px;}
 .facexin .time{color:#ccc;margin:0;}
 
-.facexin .isMe{text-align:right;padding-left:30px;padding-right:150px;}
+/*.facexin .isMe{text-align:right;padding-left:30px;padding-right:150px;}
 .facexin .isMe .left{right:10px;left:auto;}
-.facexin .isMe .right{padding-right:10px;border:0;border-right:solid 1px #ccc;}
+.facexin .isMe .right{padding-right:10px;border:0;border-right:solid 1px #ccc;}*/
 
 .chat{text-align:center;width:100%;height:100%;background:#666;color:#fff}
 .local{position:absolute;right:0;bottom:0;z-index:2000;background:#666;}

@@ -1,0 +1,14 @@
+<ion-view title="我的资料">
+    <ion-nav-buttons side="left"><button class="button button-clear icon ion-ios7-arrow-back" ng-click="back()">取消</button></ion-nav-buttons>
+    <ion-content>
+        <div class="myinfo list">
+            <a class="img item item-icon-right" href="#/tab/settingTakeTip">
+                <img ng-src="{{info.img}}"/>
+                <strong class="nickname">{{info.name}}</strong>
+                <i class="icon icon-right ion-ios7-arrow-right"></i>
+            </a>
+            <a class="item item-icon-right" href="#/tab/about">关于脸呼<i class="icon icon-right ion-ios7-arrow-right"></i></a>
+            <a class="item" ng-click="logout()">退出</a>
+        </div>
+    </ion-content>
+</ion-view>

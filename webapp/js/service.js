@@ -4,14 +4,14 @@ servicesModule.factory('$ionicStorage',function($rootScope){
     return {
         max:{
             notices:10,//最多10条提醒 - 本地存储中唯一jid的用户，只显示最新的一条
-            perCons:20//每个用户最多10条
+            perCons:20//每个用户最多20条
         },
-        set:function(message){//message = {jid:,name:,text:,url:}
+        set:function(message,isMe){//message = {jid:,name:,text:,url:}
             if(!this.facexin) this.init();//初始化
 
             var notices = this.facexin.notices,xins = this.facexin.xins;
             var jid = message.jid,found = false,index;
-
+            
             //处理新消息
             for(var i = 0; i < notices.length; i++){
                 var notice = notices[i],n_jid = notice.jid;
@@ -21,39 +21,46 @@ servicesModule.factory('$ionicStorage',function($rootScope){
                     break;
                 }
             }
-            if(found) notices.splice(i,1); //每人只存一条最新的，删除已有
-            notices.unshift(message);
-            if(notices.length > this.max.notices) notices = notices.slice(0,this.max.notices);
+            if(!isMe){
+                if(found) notices.splice(i,1); //每人只存一条最新的，删除已有
+                notices.unshift(message);
+                if(notices.length > this.max.notices) notices.slice(0,this.max.notices);
+            }
 
             //处理聊天记录
             var xin = xins[jid],list;
             if(!xin) xins[jid] = {'unreaded':0,'name':message.name,'lists':[]};
-            if(!message.isMe) xins[jid]['unreaded'] += 1;
+            if(!isMe){
+                xins[jid]['unreaded'] += 1;
+                $rootScope.$apply(function(){
+                    $rootScope.badgeCounts = ($rootScope.badgeCounts || 0) + 1;//Tab消息条数加1
+                })
+            }
 
             list = {'text':message.text,'url':message.url};
-            if(message.isMe) list.isMe = true;
+            xins[jid]['lists'] = xins[jid]['lists'] || [];
             xins[jid]['lists'].push(list);
 
             if(xins[jid]['lists'].length > this.max.perCons){
                 //如果超出max，cookie只存储max属性，但是xins对象中全部存上
-                xins[jid]['lists'] = xins[jid]['lists'].slice(0,this.max.perCons);
+                 xins[jid]['lists'] = xins[jid]['lists'].slice(-this.max.perCons + 1);
             }
             Storage.set('facexin',this.facexin);
 
-            $rootScope.$broadcast('news',message)//broadcast给xinCtrl
-
-            $rootScope.$apply(function(){
-                $rootScope.badgeCounts = ($rootScope.badgeCounts || 0) + 1;//Tab消息条数加1
-            })
+            if(!isMe) $rootScope.$broadcast('news',message);
         },
         init:function(){
-            this.facexin = Storage.get('facexin') || {notices:[],xins:{}};
+            var my_jid = $rootScope.userInfo.username;
+            this.facexin = Storage.get('facexin') || {jid:$rootScope.userInfo.username,notices:[],xins:{}};
+            if(!this.facexin || this.facexin.jid != my_jid){//如果发现本地数据不是当前用户，则里面删除本地数据
+                Storage.remove('facexin');
+                this.facexin = {jid:my_jid,notices:[],xins:{}}
+            }
         }
     }
 }).factory('$ionicNotice',function($ionicTip,$http){
     return {
         init:function(){
-            var self = this;
             try{//过滤Android里面奇怪的错误
                 if(Notification){
                     if(Notification.permission == 'granted'){
@@ -74,12 +81,12 @@ servicesModule.factory('$ionicStorage',function($rootScope){
             }catch(e){}
         },
         setNotice:function(jid,nick){
-            var msg1 = '▣ ' + nick + ' 请求和您视频通话',msg2 = '◈ ' + nick + ' 请求和您视频通话',itv,i = 1;
+            var msg1 = '▣ ' + nick + ' 想和您视频通话',msg2 = '◈ ' + nick + ' 想和您视频通话',itv,i = 1;
             try{//过滤Android里面奇怪的错误
                 if(Notification && Notification.permission == 'granted'){
-                    new Notification('脸呼通知',{
+                    new Notification('来电提醒',{
                         'icon':'/avatar/' + jid + '.100.png',
-                        'body':nick + ' 请求和您视频通话'
+                        'body':nick + ' 想和您视频通话'
                     })
                 }
             }catch(e){}
@@ -97,104 +104,52 @@ servicesModule.factory('$ionicStorage',function($rootScope){
             },1000)
         }
     }
-}).factory('$ionicXin',function($http,$ionicVideo,$ionicXmpp,$ionicTip,$ionicStorage){
-    var waiting = false;
+}).factory('$ionicRecord',function($interval){
     return {
-        show:function(m_jid,jid,nick){
-            var self = this;
-            if(!_$('facexinPop')){
-                var div = document.createElement('div');
-                div.className = 'facexinPop';
-                div.id = 'facexinPop';
-                div.innerHTML = '<video autoplay></video><div class="counter hidden" id="counter">2</div><div id="inputWrapper" class="inputWrapper hidden"><div class="title">回车发送消息 + 表情动画(2s)</div><div class="con"><input id="xin_put" type="text" placeholder="请输入文字内容 - 字数最多50字"></div></div><i class="xin-close ion-close-round" id="xin-close"></i>';
-                document.body.appendChild(div);
+        run:function(options,callback){
+            var video = options.video,w = video.offsetWidth,h = video.offsetHeight;
+            if(!video) return;
 
-                var gif = _$('facexinPop').getElementsByTagName('video')[0],input = _$('xin_put'),close = _$('xin-close');
-                input.addEventListener('keydown',function(e){
-                    var keyCode = e.keyCode || e.which;
-                    if(keyCode == 13){
-                          if(input.value.length > 50){
-                              $ionicTip.show('最多允许输入50个字符').timeout();
-                          }else{
-                              _$('counter').className = 'counter';
-                             self.to(m_jid,jid,nick);
-                          }
-                    }
-                },false)
-                close.addEventListener('click',function(e){
-                    e.preventDefault();
-                    self.close();
-                },false)
-                gif.addEventListener('canplaythrough',function(){
-                    setTimeout(function(){
-                        _$('inputWrapper').className = 'inputWrapper';
-                        input.focus();
-                    },50)
-                },false)
-            }else{
-                _$('facexinPop').className = 'facexinPop';
-            }
-            var gif = _$('facexinPop').getElementsByTagName('video')[0];
-            $ionicVideo.loadVideo(gif);
-        },
-        close:function(){
-            if(waiting) return;//正在录制Gif，不允许关闭
-            if($ionicVideo.stream){
-                $ionicVideo.stream.stop();
-                $ionicVideo.stream = null;
+            var canvas = document.createElement('canvas'),ctx = canvas.getContext('2d');
+            canvas.width = w;
+            canvas.height = h;
 
-                setTimeout(function(){
-                    _$('facexinPop').className = 'faceXinDown';
-                },500)
-            }
-        },
-        to:function(m_jid,jid,nick){
-            var encoder = new GIFEncoder(),canvas = document.createElement('canvas'),ctx = canvas.getContext('2d'),i = 0,self = this;
-            var face = _$('facexinPop').getElementsByTagName('video')[0];
-            waiting = true;//正在录Gif时，不允许关闭
-
-            _$('counter').className = 'counter';
-
-            canvas.width = face.offsetWidth;
-            canvas.height = face.offsetHeight;
-            encoder.setRepeat(0); 
-            encoder.setDelay(200);
+            var encoder = new GIFEncoder(),times = (options.times || 2) * 1000,snapshoot = options.snapshoot || 10;
+            var delay = parseInt(times/snapshoot);//计算出快照的时间间隔
+            encoder.setRepeat(0);
+            encoder.setDelay(delay);
             encoder.start();
 
-            var itv = setInterval(function(){//2秒10帧
-                if(i == 10){
-                    clearInterval(itv);
-                    encoder.finish();
-                    waiting = false;
+            $interval(function(){
+                ctx.drawImage(video,0,0,w,h)
+                encoder.addFrame(ctx);
+            },delay,snapshoot).then(function(){
+                encoder.finish();
 
-                    _$('counter').className = 'counter hidden';
-                    _$('counter').innerHTML = '2';
-
-                    var binary_gif = encoder.stream().getData();
-                    var data_url = 'data:image/gif;base64,'+encode64(binary_gif);
-                    var time = new Date().getTime(),gifId = m_jid + '_' + time;
-                    var para = 'picData=' + encodeURIComponent(data_url) + '&gifId=' + gifId;
-
-                    $http.post('/api/facesms/saveGif',para).success(function(data){
-                        var status = data.status;
-                        if(status == 'success'){
-                            $ionicXmpp.connection.send($msg({type:'chat',to:jid + '@facetalk',gifid:gifId,nick:nick}).c('body').t(_$('xin_put').value))
-
-                            var message = {'jid':jid,'name':nick,'url':'/faceSmsGif/' + gifId.substring(0,2) + '/' + gifId.substring(2,4) + '/' + gifId  + '.gif','text':_$('xin_put').value,'isMe':true};
-                            $ionicStorage.set(message)
-
-                            _$('xin_put').value = '';
-                        }
-                    })
-                }else{
-                    ctx.drawImage(face,0,0,face.offsetWidth,face.offsetHeight)
-                    encoder.addFrame(ctx);
-                    if(i == 5){
-                        _$('counter').innerHTML = '1';
-                    }
-                    i++
+                var binary_gif = encoder.stream().getData();
+                var data = 'data:image/gif;base64,'+encode64(binary_gif);
+                if(callback && typeof callback == 'function'){
+                    callback(data);
                 }
-            },200)
+            });
+        },
+        showTimer:function(elm,timer){
+            if(!_$('recording')){
+                var div = document.createElement('div');
+                div.id = 'recording';
+                div.className = 'recording hidden';
+                div.innerHTML = '<div class="bg"></div><div class="cons"><span class="shine"></span> 录制中 ... <span>' + timer + '</span>秒</div>';
+                elm.appendChild(div);
+            }
+            var recording = angular.element(_$('recording')),left = recording.find('span').eq(1),i = timer;
+            recording.removeClass('hidden');
+
+            $interval(function(){
+                left.html(--i);
+            },1000,timer).then(function(){
+                left.html(timer);
+                recording.addClass('hidden');
+            })
         }
     }
 }).factory('$ionicStatus',function(){
@@ -245,8 +200,8 @@ servicesModule.factory('$ionicStorage',function($rootScope){
             email:'请输入正确的邮箱地址',
             pwdRequired:'请输入密码',
             pwd:'密码格式错误:6~16位字符,区分大小写',
-            nameRequired:'用户名不能为空',
-            name:'用户名格式错误:4~18位汉字或英文字符'
+            nameRequired:'昵称不能为空',
+            name:'昵称格式错误:4~18位汉字或英文字符'
         },
         login:function(form){
             var email = form.loginEmail,pwd = form.loginPassword,msgs = this.msgs,msg;
@@ -292,7 +247,6 @@ servicesModule.factory('$ionicStorage',function($rootScope){
 }).factory('$ionicUser',function($rootScope,$http,$ionicTip,$ionicXmpp){
     return {
         getInfo:function(name,cb){
-            var self = this;
             return $http.get('/api/user/get/' + name).success(function(data){
                 $rootScope.userInfo = data;
                 $rootScope.isLogin = true;
@@ -311,7 +265,7 @@ servicesModule.factory('$ionicStorage',function($rootScope){
                     var username = data.username || Storage.cookie.get('_fh_username');
                     self.getInfo(username,cb);
                 }else{//登录失败
-                    $ionicTip.show(data.desc).timeout();
+                    $ionicTip.show('邮箱地址或密码错误').timeout();
                 }
             }).error(function(){})
         },
@@ -327,7 +281,7 @@ servicesModule.factory('$ionicStorage',function($rootScope){
             }).error(function(){})
         }
     }
-}).factory('$ionicXmpp',function($rootScope,$http,$state,$ionicPopup,$ionicNavBarDelegate,$ionicTip,$ionicNotice,$ionicStorage){
+}).factory('$ionicXmpp',function($rootScope,$http,$state,$ionicPopup,$ionicNavBarDelegate,$ionicTip,$ionicNotice,$ionicStorage,$filter){
     return {
         server:'/http-bind',
         status:0,
@@ -380,81 +334,118 @@ servicesModule.factory('$ionicStorage',function($rootScope){
                 return true;
             })
         },
+        setStatus:function(status){
+            var con = this.connection;
+            if(status == 0){
+                con.send($pres().c('show').t('chat'));
+            }else if(status == 1 || status == 2 || status == 3){
+                con.send($pres().c('show').t('dnd'));
+            }
+            this.status = status;
+        },
+        sendSignal:function(signal,from,to){
+            var con = this.connection,
+                from_jid = from.jid,from_nick = from.nick,
+                to_jid = to.jid,to_nick = to.nick,
+                self = this;
+
+            con.send($msg({type:'chat',to:to_jid + '@facetalk',nick:from_nick,time:new Date().getTime()}).c('body').t(signal));
+
+            if(signal == 'video'){
+                self.setStatus(1);
+                $ionicTip.show('正在发送视频请求，请勿刷新页面 ...','false').timeout(30000,function(){
+                    self.sendSignal('timeout',from,to);
+                }); 
+            }else if(signal == 'ok'){
+                self.setStatus(3);
+                $state.go('tabs.chat',{roomid:to_jid + '_' + from_jid,nick:encodeURI(to_nick)})
+            }else if(signal == 'no'){
+                self.setStatus(0);
+            }else if(signal == 'busy'){
+            }else if(signal == 'timeout'){
+                $ionicPopup.confirm({
+                    title:'超时通知',
+                    template:'对方未响应，请稍后重试 ...',
+                    okText:'给TA留言',
+                    cancelText:'确定'
+                }).then(function(res){
+                    self.setStatus(0);
+                    if(res) $state.go('tabs.xin-detail',{jid:to_jid,name:encodeURI(to_nick)});
+                });
+            }
+        },
         message:function(message){
-            //console.log(message);
-            var con = this.connection,from = message.getAttribute('from'),f_jid = from.split('@')[0],gifId = message.getAttribute('gifid'),signal = message.childNodes[0].innerHTML,self = this;
-            var msg = $msg({type:'chat',to:from}).c('body');
+            var from_info = message.getAttribute('from'),f_jid = from_info.split('@')[0],gifId = message.getAttribute('gifid'),signal = message.childNodes[0].innerHTML,nick = message.getAttribute('nick'),self = this;
 
-            //脸呼消息
-            if(gifId){
-                var nick = message.getAttribute('nick');
-                var h1 = gifId.substring(0,2),h2 = gifId.substring(2,4),news = {'jid':f_jid,'name':nick,'url':'/faceSmsGif/' + h1 + '/' + h2 + '/' + gifId  + '.gif',text:signal};
-
+            if(gifId){//脸呼消息
+                var h1 = gifId.substring(0,2),h2 = gifId.substring(2,4),news = {'jid':f_jid,'name':nick,'url':'/faceSmsGif/' + h1 + '/' + h2 + '/' + gifId  + '.gif',text:signal};//对方的jid和nick
                 $ionicStorage.set(news);
-
             }else{
+                var from_jid = $rootScope.userInfo.username,from_nick = $rootScope.userInfo.name;
+                var from = {jid:from_jid,nick:from_nick},to = {jid:f_jid,nick:nick};
+
                 if(signal == 'video'){
-                    var nick = message.getAttribute('nick');
                     if(self.status != 0){
-                        con.send(msg.t('busy'))
+                        self.sendSignal('busy',from,to);
                         return;
                     }
-
-                    con.send($pres().c('show').t('dnd'));
-                    self.status = 2;
-
-                    self.popup = $ionicPopup.confirm({
-                        title:'提示信息',
-                        template:'<div class="row request"><div class="col col-33 col-center"><img src="/avatar/' + f_jid + '.png"/></div><div class="col col-67"><strong>' + nick + '</strong> 请求和您进行视频聊天，是否同意</div></div>',
+                    self.setStatus(2);
+                    $ionicPopup.confirm({
+                        title:'来电提醒',
+                        template:'<div id="videoPOP" class="row request"><div class="col col-33 col-center"><img src="/avatar/' + f_jid + '.png"/></div><div class="col col-67"><strong>' + nick + '</strong> 想和您进行视频聊天</div></div>',
                         okText:'同意',
                         cancelText:'拒绝'
-                    });
-                    self.popup.then(function(res){
-                        if(res){
-                            var roomid = f_jid + '_' + self.xmpp.jid.split('@')[0];
-
-                            con.send(msg.t('ok'));
-                            self.status = 3;
-
-                            $state.go('tabs.chat',{roomid:roomid})
-                        }else{
-                            con.send(msg.t('no'))
-                            con.send($pres().c('show').t('chat'));
-                            self.status = 0;
-                        }
+                    }).then(function(res){
+                        res ? self.sendSignal('ok',from,to) : self.sendSignal('no',from,to);  
                     })
                     
                     $ionicNotice.setNotice(f_jid,nick);//设置通知
                     _$('noticeAd').play();
                 }else if(signal == 'ok'){
                     var roomid = self.xmpp.jid.split('@')[0] + '_' + f_jid;
+                    self.setStatus(3);
 
-                    con.send($pres().c('show').t('dnd'));
-                    self.status = 3;
-
-                    /history/.test(location.hash) ? $state.go('tabs.history.chat',{roomid:roomid}) : $state.go('tabs.chat',{roomid:roomid})
+                    /history/.test(location.hash) ? $state.go('tabs.history.chat',{roomid:roomid}) : $state.go('tabs.chat',{roomid:roomid,nick:encodeURI(nick)})
                 }else if(signal == 'no'){
-                    $ionicTip.show('对方拒绝了您的请求').timeout();
+                    $ionicTip.hide();//关闭等待请求提示
+                    $ionicPopup.confirm({
+                        title:'脸呼消息',
+                        template:'对方拒绝了您的请求 ...',
+                        okText:'给TA留言',
+                        cancelText:'确定'
+                    }).then(function(res){
+                        self.setStatus(0);
+                        if(res) $state.go('tabs.xin-detail',{jid:f_jid,name:encodeURI(nick)})
+                    })
 
-                    con.send($pres().c('show').t('chat'));
-                    self.status = 0;
                 }else if(signal == 'busy'){
-                    $ionicTip.show('对方正在通话中，请稍后再试 ...').timeout();
-
-                    con.send($pres().c('show').t('chat'));
-                    self.status = 0;
+                    $ionicTip.hide();
+                    $ionicPopup.confirm({
+                        title:'脸呼消息',
+                        template:'对方正在通话中，请稍后再试 ...',
+                        okText:'给TA留言',
+                        cancelText:'确定'
+                    }).then(function(res){
+                        self.setStatus(0);
+                        if(res) $state.go('tabs.xin-detail',{jid:f_jid,name:encodeURI(nick)})
+                    })
                 }else if(signal == 'timeout'){
-                    var nick = message.getAttribute('nick');
+                    var time = message.getAttribute('time'),f_time = $filter('date')(time,'HH:mm');
+                    $ionicPopup.confirm({
+                        title:'未接来电',
+                        template:'<div class="row request"><div class="col col-33 col-center"><img src="/avatar/' + f_jid + '.png"/></div><div class="col col-67"><strong>' + nick + '</strong> 与 ' + f_time + ' 呼叫过您</div></div>',
+                        okText:'回拨',
+                        cancelText:'确定'
+                    }).then(function(res){
+                        var videoPop = _$('videoPOP');
+                        if(videoPop){
+                            var pop = angular.element(videoPop).parent().parent();
+                            pop[0].previousSibling.className = 'backdrop';
+                            pop.remove();
+                        }
 
-                    $ionicPopup.alert({
-                        title:'提示信息',
-                        template:'<div class="row request"><div class="col col-33 col-center"><img src="/avatar/' + f_jid + '.png"/></div><div class="col col-67"><strong>' + nick + '</strong> 给您发起了视频请求，由于等待时间较长，请求已中断</div></div>',
-                        okText:'确认'
-                    }).then(function(){
-                        if(self.popup) self.popup.close();//关闭之前的
-
-                        con.send($pres().c('show').t('chat'));
-                        self.status = 0;
+                        self.setStatus(0);
+                        if(res) self.sendSignal('video',from,to);
                     })
                 }else{
                     if(signal == 'PermissionDeniedError'){//对方关闭了摄像头
@@ -468,8 +459,18 @@ servicesModule.factory('$ionicStorage',function($rootScope){
     var isEnder;
     return {
         stream:null,
-        loadVideo:function(elm){
+        loadVideo:function(elm,openVideoTip,success,error){
             var self = this,elm = elm || _$('face');
+            if(openVideoTip){
+                $ionicTip.show(openVideoTip);
+            }else{
+                if($rootScope.isPC){//开启摄像头提醒
+                    $ionicTip.show('请看上面的浏览器提示<img src="images/icons/arrow.png"/>，点击“允许”按钮，否则您无法完成注册');
+                }else{
+                    $ionicTip.show('请按照浏览器提示，允许使用摄像头以完成注册');
+                }
+            }
+
             navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
             navigator.getUserMedia({video:true,audio:false}, function(stream){
                 var video = elm;
@@ -477,7 +478,22 @@ servicesModule.factory('$ionicStorage',function($rootScope){
                 window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
                 video.src = window.URL.createObjectURL(stream);
                 self.stream = stream;
-            },function(error){});
+                if(success && typeof success == 'function'){
+                    success();
+                }else{
+                    $ionicTip.hide();
+                    $timeout(function(){
+                        $ionicTip.show('请确保自拍头像清晰完整。注意，系统会删除不符合要求的头像。').timeout(3000);
+                    },500)
+                }
+            },function(err){
+                console.log(err);
+                if(error && typeof error == 'function'){
+                    error(err);
+                }else{
+                    $ionicTip.show('浏览器未能开启摄像头，请按此<a class="link" target="_blank" href="http://tieba.baidu.com/p/3234947658">（链接）</a>说明，开启摄像头以完成注册。');
+                }
+            });
         },
         take:function(){
             var videoStream = this.stream,video = document.getElementById('face'),take = document.getElementById('take'),choose = document.getElementById('choose');
@@ -499,7 +515,6 @@ servicesModule.factory('$ionicStorage',function($rootScope){
                 if(status == 'success'){
                     self.stream.stop();
                     self.stream = null;
-                    $ionicLoading.show({template:'您的头像已上传成功,即将返回上一页'});
                     $rootScope.isComplete = true;
                     if(!$ionicXmpp.connection) $ionicXmpp.bind.call($ionicXmpp,name);
                     //2秒后返回
@@ -514,7 +529,7 @@ servicesModule.factory('$ionicStorage',function($rootScope){
             })
 
             $ionicLoading.show({
-                template:'<em class="ion-loading-c"></em>&nbsp;&nbsp;正在保存您的资料'
+                template:'<em class="ion-loading-c"></em>&nbsp;&nbsp;正在保存您的头像，即将完成 ...'
             });
         },
         reset:function(){
@@ -524,13 +539,13 @@ servicesModule.factory('$ionicStorage',function($rootScope){
             video.play();
         },
         initRTC:function(opts){
-            var roomid = opts.roomid,vid,self = this;
+            var roomid = opts.roomid,vid;
             var con = $ionicXmpp.connection,m_jid = $rootScope.userInfo.username;
             var webrtc = $ionicXmpp.webrtc;
 
             if(!webrtc){
                 webrtc = ($ionicXmpp.webrtc =  new SimpleWebRTC({
-                    url:'https://www.facehu.com:8888',
+                    url:'https://www.facehu.cn:8888',
                     localVideoEl:'local',
                     remoteVideosEl:'remote',
                     autoRequestMedia:true
@@ -550,29 +565,25 @@ servicesModule.factory('$ionicStorage',function($rootScope){
                     }
                 }) 
                 webrtc.on('videoRemoved',function(){
-                    //离开
                     if(!isEnder){//如果不是自己结束聊天
-                        $ionicTip.show('对方结束了聊天,请点击左上角结束 ...').timeout(5000);
+                        $ionicTip.show('对方已挂断，请点击“挂断”按钮返回 ...').timeout(5000);
                         isEnder = true;
                     }else{
-                        con.send($pres().c('show').t('chat'));
-                        $ionicXmpp.status = 0;
+                        $ionicXmpp.setStatus(0);
                     }
 
                     if(vid){//记录结束时间，并结算
                         $http.get('/api/pay/chatRecord/end/' + vid);
-                        $http.get('/api/pay/chatTransaction/' + vid);
+                        //$http.get('/api/pay/chatTransaction/' + vid);
                     }
                 })
                 webrtc.on('localMediaError',function(err){
                     var name = err.name,jid = roomid.replace(m_jid,'').replace('_','');
                     con.send($msg({type:'chat',to:jid + '@facetalk'}).c('body').t(name));
                     if(name == 'PermissionDeniedError'){
-                        $ionicTip.show('由于您没有开启摄像装置，将无法与对方进行聊天 ...').timeout(5000);
+                        $ionicTip.show('浏览器未能开启摄像头，请按此<a class="link" target="_blank" href="http://tieba.baidu.com/p/3234947658">（链接）</a>说明，开启摄像头 ...').timeout(5000);
                     }
-
-                    con.send($pres().c('show').t('chat'));
-                    $ionicXmpp.status = 0;
+                    $ionicXmpp.setStatus(0);
                 })
             }else{
                 webrtc.startLocalVideo();

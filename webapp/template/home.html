@@ -1,0 +1,20 @@
+<ion-view title="脸呼">
+    <ion-nav-buttons side="right" ng-if="!isLogin || !isComplete">
+        <a class="button button-clear font-small" href="#/tab/login">登录</a>
+    </ion-nav-buttons>
+    <ion-content>
+        <div ng-if="supportVideo && isComplete">
+            <ion-refresher pulling-text="下拉刷新在线用户" on-refresh="doRefresh()"></ion-refresher>
+            <div class="ion-flex" ng-click="askNotice()">
+                <a ng-repeat="item in online" href="#/tab/detail/{{item.username}}" jid="{{item.jid}}"><img ng-src="/avatar/{{item.imgUrl}}"/></a>
+            </div>
+        </div>
+        <div ng-if="!supportVideo || !isLogin || !isComplete">
+            <a href="#/tab/login" ng-if="supportVideo" class="home-tip">请先登录,以开启您的视频之旅！</a>
+            <div class="unvalid-home">
+                <a href="#/tab/login"><img src="/images/avatar/multi.jpg"/></a>
+            </div>
+            <div class="siteInfo"><a href="http://www.miibeian.gov.cn/" target="_blank">京备案号：京ICP备14041687号-1</a></div>
+        </div>
+    </ion-content>
+</ion-view>
