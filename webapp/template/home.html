@@ -2,11 +2,14 @@
     <ion-nav-buttons side="right" ng-if="!isLogin || !isComplete">
         <a class="button button-clear font-small" href="#/tab/login">登录</a>
     </ion-nav-buttons>
-    <ion-content>
+    <ion-content overflow-scrolling="true">
         <div ng-if="supportVideo && isComplete">
-            <ion-refresher pulling-text="下拉刷新在线用户" on-refresh="doRefresh()"></ion-refresher>
             <div class="ion-flex" ng-click="askNotice()">
-                <a ng-repeat="item in online" href="#/tab/detail/{{item.username}}" jid="{{item.jid}}"><img ng-src="/avatar/{{item.imgUrl}}"/></a>
+                <a ng-repeat="item in users" href="#/tab/detail/{{item.userName}}">
+                    <img ng-src="/avatar/{{item.userName}}.100.png"/>
+                    <i ng-class="item.online ? 'user_status online' : 'user_status offline'"></i>
+                </a>
+                <ion-infinite-scroll ng-if="hasMore" on-infinite="loadMore()" distance="1%"></ion-infinite-scroll>
             </div>
         </div>
         <div ng-if="!supportVideo || !isLogin || !isComplete">

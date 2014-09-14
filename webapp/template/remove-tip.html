@@ -1,10 +1,13 @@
-<ion-view title="设置头像">
+<ion-view title="设置头像" ng-controller="removeTipCtrl">
     <ion-nav-buttons side="left">
         <button class="button button-clear icon ion-ios7-arrow-back" ng-click="back()">返回</button>
     </ion-nav-buttons>
     <ion-content>
-        <div class="remove-tip">
-            <p>由于您的头像{{removeInfo}}，需要重新拍照。</p>
+        <div class="remove-tip flex vmiddle hcenter">
+            <div class="cons">
+                <p>由于您的头像 <strong class="assertive">{{removeInfo}}</strong> ，需要重新拍照。</p>
+                <div class="buttons"><a href="{{takeURL}}" class="button button-positive">马上设置您的头像</a></div>
+            </div>
         </div>
     </ion-content>
 </ion-view>

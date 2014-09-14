@@ -4,12 +4,12 @@
     </ion-nav-buttons>
     <ion-content>
         <div class="facexin list">
-            <a class="item" ng-if="notices.length" ng-repeat="item in notices" href="#/tab/xin-detail/{{item.jid}}/{{item.name | escape}}">
+            <a class="item" ng-if="notices.length" ng-repeat="item in notices track by $index" href="#/tab/xin-detail/{{item.jid}}/{{item.name | escape}}">
                 <div class="left"><img ng-src="{{item.url}}"></div>
                 <div class="right">
                     <h2>{{item.name}}</h2>
                     <p>{{item.text}}</p>
-                    <i class="tip" ng-if="item.unreaded">{{item.unreaded}}</i>
+                    <i class="tip" ng-show="unreaded | unreaded:item.jid">{{unreaded | unreaded:item.jid}}</i>
                 </div>
             </a>
             <div ng-if="!notices.length" class="item">暂无消息</div>

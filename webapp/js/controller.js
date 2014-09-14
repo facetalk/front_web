@@ -53,6 +53,7 @@ controllersModule.controller('loginCtrl',function($rootScope,$scope,$ionicUser,$
     }
 
     $scope.removeInfo = msg;
+    $scope.takeURL = '#/tab/settingTake';
 }).controller('takeCtrl',function($rootScope,$scope,$state,$ionicVideo,$ionicNavBarDelegate){
     $ionicVideo.loadVideo();//开启视频
 
@@ -141,19 +142,25 @@ controllersModule.controller('loginCtrl',function($rootScope,$scope,$ionicUser,$
 }).controller('xinCtrl',function($rootScope,$scope,$ionicStorage){
     var facexin = $ionicStorage.facexin;
     if(!facexin) $ionicStorage.init();
-    var notices = $ionicStorage.facexin.notices,xins = $ionicStorage.facexin.xins;
+    var notices = $ionicStorage.facexin.notices,xins = $ionicStorage.facexin.xins,unreaded = {};
 
     $rootScope.badgeCounts = 0;//进入脸信新消息页,badge消失，未读消息和新消息不是一码事
 
     angular.forEach(notices,function(notice){
         var jid = notice['jid'];
-        notice['unreaded'] = xins[jid].unreaded;
+        //notice['unreaded'] = xins[jid].unreaded;
+        unreaded[jid] = xins[jid].unreaded;
     })
     $scope.notices = notices;
+    $scope.unreaded = unreaded;
+
 
     $scope.$on('news',function(event,message){
         var jid = message.jid;
-        $scope.notices[0]['unreaded'] = xins[jid]['unreaded'];
+        //$scope.notices[0]['unreaded'] = xins[jid]['unreaded'];
+        $scope.$apply(function(){
+            unreaded[jid] = xins[jid]['unreaded'];
+        })
     })
 }).controller('xinDetailCtrl',function($rootScope,$scope,$http,$stateParams,$ionicStorage,$ionicVideo,$ionicTip,$ionicRecord,$ionicXmpp,$ionicNavBarDelegate,$ionicScrollDelegate,$timeout){
     var my_jid = $rootScope.userInfo.username,jid = $stateParams.jid,nick = $rootScope.userInfo.name;
@@ -171,6 +178,7 @@ controllersModule.controller('loginCtrl',function($rootScope,$scope,$ionicUser,$
     $scope.name = decodeURI($stateParams.name);
 
     if(xins[jid]['unreaded']){
+        if($rootScope.badgeCounts) $rootScope.badgeCounts -= xins[jid]['unreaded'];
         xins[jid]['unreaded'] = 0;
         Storage.set('facexin',$ionicStorage.facexin);
     }
@@ -195,13 +203,13 @@ controllersModule.controller('loginCtrl',function($rootScope,$scope,$ionicUser,$
             if(input.val().length > 50){
                 $ionicTip.show('最多允许输入50个字符').timeout();
             }else{
-                var v = input.val();
+                var v = input.val(),time = 1;
                 input.val('消息发送中，请稍后 ...');
                 input.attr('disabled','disabled');
 
-                $ionicRecord.showTimer(_$('facexin').parentNode,2);
+                $ionicRecord.showTimer(_$('facexin').parentNode,time);
 
-                $ionicRecord.run({video:_$('facexin')},function(data){
+                $ionicRecord.run({video:_$('facexin'),times:time},function(data){
                     var time = new Date().getTime(),gifId = my_jid + '_' + time;
                     var para = 'picData=' + encodeURIComponent(data) + '&gifId=' + gifId;
 

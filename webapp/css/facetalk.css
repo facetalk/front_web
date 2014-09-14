@@ -13,13 +13,16 @@ display:-webkit-box;display:box;display:-moz-box;display:-ms-flexbox;display:-we
 -webkit-box-lines:multiple;box-lines:multiple;-moz-box-lines:multiple;ms-flex-wrap:wrap;-webkit-flex-wrap:wrap;flex-wrap:wrap;
 width:100%;max-width:600px;margin:0 auto;
 }
-.ion-flex a{display:block;width:25%;border:solid 1px #fff;max-width:100px;height:130px;overflow:hidden;text-align:center;}
+.ion-flex a{display:block;width:25%;border:solid 1px #fff;max-width:100px;height:130px;overflow:hidden;text-align:center;position:relative}
 .ion-flex img{width:100px;}
 .ion-circle{position:absolute;right:0;top:0;display:block;width:10px;height:10px;border-radius:5px;}
 .unvalid-home a{width:100%;display:block;text-align:center;font-size:12px;}
 .unvalid-home img{width:100%;max-width:400px;}
 .siteInfo{text-align:center;padding-top:10px;}
 .siteInfo a{text-decoration:none;color:#333;font-size:12px;}
+.user_status{position:absolute;z-index:2000;top:5px;right:5px;display:block;width:10px;height:10px;border-radius:5px;}
+.online{background:#66cc33;}
+.offline{background:#ccc}
 
 /*History*/
 #history img{width:80px;height:auto;border-radius:0;max-height:130px;}
@@ -31,10 +34,10 @@ width:100%;max-width:600px;margin:0 auto;
 .regist .info{padding-left:10px;}
 
 /*拍照前提醒页*/
-.take-tip{max-width:500px;height:80%;margin: 44px auto;padding:0 10px;}
+.remove-tip,.take-tip{max-width:500px;height:80%;margin: 44px auto;padding:0 10px;}
 .p1{font-size:16px;margin-bottom:40px;font-weight:bold}
 .p6{margin:20px 0;font-weight:bold}
-.take-tip .buttons{text-align:center;margin-top:40px;}
+.remove-tip .buttons,.take-tip .buttons{text-align:center;margin-top:40px;}
 
 /*拍照页*/
 .take{margin:0 auto;text-align:center;}
@@ -52,20 +55,21 @@ width:100%;max-width:600px;margin:0 auto;
 .detail .item-image img{width:200px;}
 
 .facexinChat{position:fixed;width:100%;height:100px;text-align:left;padding:0px 30px 0px 150px;bottom:49px;overflow:hidden;background:#fff;}
-.facexinChat input{border:1px;}
+.facexin img{-moz-transform:rotateY(180deg);-webkit-transform:rotateY(180deg);transform:rotateY(180deg);}
+.facexinChat input{border:1px solid #ccc;}
 .facexinChat .left{height:100px;max-width:140px;text-align:center;overflow:hidden;position:absolute;left:10px;top:0px;}
 .recording{position:absolute;z-index:5;color:#fff;font-size:12px;right:0;top:0;height:16px;line-height:16px;width:100px;text-align:center;}
 .recording .bg{background:#000;opacity:0.6;position:absolute;left:0;top:0;z-index:5;width:100%;height:100%;}
 .recording .cons{position:absolute;top:0;left:0;padding:0 5px;z-index:6;width:100%;height:100%;}
 .recording .shine{width:8px;height:8px;display:inline-block;border-radius:4px;vertical-align:middle;background:#d30d00}
 .facexinChat .right{}
-.facexinChat video{height:100px;width:auto;}
+.facexinChat video{height:100px;width:auto;-moz-transform:rotateY(180deg);-webkit-transform:rotateY(180deg);transform:rotateY(180deg);`}
 .facexinChat .tip{text-align:center;height:20px;line-height:20px;font-weight:bold;}
 .facexinChat .con{}
 
 .facexin a{display:block;height:100px;text-align:left;padding:0 30px 0 150px;position:relative;text-decoration:none}
 .facexin .left{height:100px;max-width:140px;text-align:center;overflow:hidden;position:absolute;left:10px;top:0;}
-.facexin .right{padding-left:10px;border-left:solid 1px #ccc;}
+.facexin .right{padding-left:10px;}
 .facexin h2{font-size:16px;padding:5px 0;margin:0;}
 .facexin i{display:block;font-size:12px;line-height:18px;padding:0 10px;background:#e54a40;color:#fff;position:absolute;top:15px;right:20px;border-radius:4px;}
 .facexin-detail:last-child{padding-bottom:100px;}
@@ -91,19 +95,16 @@ display:-webkit-box;display:-moz-box;display:-ms-flexbox;display:-webkit-flex;di
 #status-info{position:absolute;top:35%;width:100%;}
 .request img{width:100%;border:solid 1px #666}
 
-//Seting页面
+/*Seting页面*/
 .myinfo{}
 .myinfo img{vertical-align:middle}
 .myinfo .img img{width:80px;border:solid 1px #333;vertical-align:middle}
 .myinfo strong{margin-left:10px;}
 
-.buyinfo{margin:20px 10px;font-size:16px;}
-.buyinfo .buyCon{text-indent:32px;}
-.buy .buy-input span{padding-left:8px;}
-.buy img{vertical-align:middle}
-
-.popForm{position:absolute;width:50%;right:0;bottom:5px;z-index:2000}
-.popForm .button{width:100%;background:none;border:0;padding:5px;}
+/*关于脸呼*/
+.about{height:80%;margin:0 auto;max-width:500px}
+.about .cons{width:100%;text-align:center}
+.about a{color:#000;text-decoration:none}
 
 
 .bar.bar-positive{background-color:#3c579d;}
@@ -111,3 +112,4 @@ display:-webkit-box;display:-moz-box;display:-ms-flexbox;display:-webkit-flex;di
 .button.button-positive{background-color:#6178af;border-color:#6178af;border-radius:4px;}
 
 .font-small{font-size:14px;}
+

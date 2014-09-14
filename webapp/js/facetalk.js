@@ -23,10 +23,14 @@ app.filter('gifTime',function(){
     return function(value){
         return encodeURI(value);
     }
+}).filter('unreaded',function(){
+    return function(value,jid){
+        return value[jid]
+    }
 })
 
 app.config(function($stateProvider,$urlRouterProvider){
-    var random = 0;
+    var random = 1;
     //首页
     $stateProvider.state('index',{
         url:'/index',
@@ -76,16 +80,33 @@ app.config(function($stateProvider,$urlRouterProvider){
         views:{
             'tab-home':{
                 templateUrl:'template/home.html?' + random,
-                controller:function($rootScope,$scope,$ionicLoading,$ionicXmpp,$ionicClient,$ionicNotice,$ionicTip){
+                controller:function($rootScope,$scope,$http,$ionicLoading,$ionicXmpp,$ionicClient,$ionicNotice){
+                    var base = 0,offset = 24;
+                    $scope.hasMore = true;
                     $scope.askNotice = function(){
                         $ionicNotice.init();//桌面通知
                     }
+                    $scope.loadMore = function(){
+                        var url = '/api/facesms/getUserListByPage/' + $rootScope.userInfo.username + '/' + base + '/' + offset;
+                        $http.get(url).success(function(data){
+                            var l = data.length;
 
-                    if($rootScope.isComplete && !Storage.cookie.get('_fh_fresh_tip')){//首次访问提醒下拉可以刷新用户列表
-                        $ionicTip.show('向下拖拽后释放以更新用户列表').timeout();
-                        Storage.cookie.set('_fh_fresh_tip','done',365*24*60*60);
+                            if(!$scope.users){
+                                $scope.users = data;
+                            }else{
+                                $scope.users = $scope.users.concat(data);
+                            }
+
+                            if(l == offset){
+                                base += offset;
+                                $scope.hasMore = true;
+                                $scope.$broadcast('scroll.infiniteScrollComplete');
+                            }else{
+                                $scope.hasMore = false;
+                            }
+                        })
                     }
-                    
+
                     if(!$ionicClient.supportVideo){
                         var msg = '';
                         if($ionicClient.isIOS){
@@ -99,10 +120,6 @@ app.config(function($stateProvider,$urlRouterProvider){
                             }
                         }
                         $ionicLoading.show({template:msg})
-                    }
-
-                    $scope.doRefresh = function(){
-                        $ionicXmpp.online();
                     }
                 }
             }
@@ -207,7 +224,7 @@ app.config(function($stateProvider,$urlRouterProvider){
                                 }
 
                                 if(l == offset){
-                                    base += 10;
+                                    base += offset;
                                     $scope.hasMore = true;
                                     $scope.$broadcast('scroll.infiniteScrollComplete');
                                 }else{

@@ -2,6 +2,7 @@ var servicesModule = angular.module('facetalk.Services',[]);
 
 servicesModule.factory('$ionicStorage',function($rootScope){
     return {
+        version:'0.0.1',//用于标识当前ionicStorage的版本，如果发生修改，删除之前存储的数据
         max:{
             notices:10,//最多10条提醒 - 本地存储中唯一jid的用户，只显示最新的一条
             perCons:20//每个用户最多20条
@@ -50,11 +51,12 @@ servicesModule.factory('$ionicStorage',function($rootScope){
             if(!isMe) $rootScope.$broadcast('news',message);
         },
         init:function(){
-            var my_jid = $rootScope.userInfo.username;
+            var my_jid = $rootScope.userInfo.username,version = Storage.get('facexin_version');
             this.facexin = Storage.get('facexin') || {jid:$rootScope.userInfo.username,notices:[],xins:{}};
-            if(!this.facexin || this.facexin.jid != my_jid){//如果发现本地数据不是当前用户，则里面删除本地数据
+            if(!this.facexin || this.facexin.jid != my_jid || version != this.version){//如果发现本地数据不是当前用户,或者版本发生变化，则里面删除本地数据
                 Storage.remove('facexin');
                 this.facexin = {jid:my_jid,notices:[],xins:{}}
+                if(version != this.version) Storage.set('facexin_version',this.version);
             }
         }
     }
@@ -102,6 +104,9 @@ servicesModule.factory('$ionicStorage',function($rootScope){
                     i = 0;
                 }
             },1000)
+        },
+        facexin:function(){
+            _$('xinAd').play();
         }
     }
 }).factory('$ionicRecord',function($interval){
@@ -255,6 +260,7 @@ servicesModule.factory('$ionicStorage',function($rootScope){
                 if(data.infoCompleteness == 1) $ionicXmpp.bind.call($ionicXmpp,data.username);
 
                 if(typeof cb == 'function') cb();
+            }).error(function(body,status){
             })
         },
         login:function(email,pwd,cb){
@@ -310,8 +316,6 @@ servicesModule.factory('$ionicStorage',function($rootScope){
                 var self = this,con = self.connection;
                 con.send($pres().c('show').t('chat'));//空闲
 
-                con.addHandler(self.online,null,'presence');
-
                 con.addHandler(function(message){
                     self.message.call(self,message)
                     return true;
@@ -319,20 +323,6 @@ servicesModule.factory('$ionicStorage',function($rootScope){
 
             }else{
             }
-        },
-        online:function(){
-            $http.get('/xmpp/get/allonline').success(function(data){
-                if(/\s*null\s*/.test(data)) return;
-                var arr = data.split(','),items = [];
-                for(var i = 0; i < arr.length; i++){
-                    var jid = arr[i],username = jid.split('@')[0],url = username + '.100.png';
-                    items.push({jid:jid,username:username,imgUrl:url})
-                }
-                $rootScope.online = items;
-                $rootScope.$broadcast('scroll.refreshComplete');
-
-                return true;
-            })
         },
         setStatus:function(status){
             var con = this.connection;
@@ -380,6 +370,7 @@ servicesModule.factory('$ionicStorage',function($rootScope){
             if(gifId){//脸呼消息
                 var h1 = gifId.substring(0,2),h2 = gifId.substring(2,4),news = {'jid':f_jid,'name':nick,'url':'/faceSmsGif/' + h1 + '/' + h2 + '/' + gifId  + '.gif',text:signal};//对方的jid和nick
                 $ionicStorage.set(news);
+                $ionicNotice.facexin();
             }else{
                 var from_jid = $rootScope.userInfo.username,from_nick = $rootScope.userInfo.name;
                 var from = {jid:from_jid,nick:from_nick},to = {jid:f_jid,nick:nick};
@@ -396,6 +387,9 @@ servicesModule.factory('$ionicStorage',function($rootScope){
                         okText:'同意',
                         cancelText:'拒绝'
                     }).then(function(res){
+                        _$('noticeAd').pause();
+                        _$('noticeAd').currentTime = 0;
+
                         res ? self.sendSignal('ok',from,to) : self.sendSignal('no',from,to);  
                     })
                     
@@ -431,6 +425,8 @@ servicesModule.factory('$ionicStorage',function($rootScope){
                     })
                 }else if(signal == 'timeout'){
                     var time = message.getAttribute('time'),f_time = $filter('date')(time,'HH:mm');
+                    _$('noticeAd').pause();
+                    _$('noticeAd').currentTime = 0;
                     $ionicPopup.confirm({
                         title:'未接来电',
                         template:'<div class="row request"><div class="col col-33 col-center"><img src="/avatar/' + f_jid + '.png"/></div><div class="col col-67"><strong>' + nick + '</strong> 与 ' + f_time + ' 呼叫过您</div></div>',
